@@ -1,6 +1,10 @@
 import pandas as pd
 from pathlib import Path
 
+"""
+Clase para abrir Costos Marginales desde carpeta....
+No se ha actualizado
+"""
 class CMg:
     def __init__(self, agno, barra):
         self.agno = agno
@@ -32,3 +36,21 @@ class CMg:
         else:
             raise ValueError('Tipo de archivo debe ser xlsx, parquet, csv')
         return
+
+
+#%%
+barra = 'PANAMERICANA__012'
+folder = Path(r'C:\_Costos_Marginales')
+año = 23
+meses = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+fin = pd.DataFrame()
+
+for mes in meses:
+    df = pd.read_parquet(folder / f'CMg_{año}_{mes}.parquet')
+    df = df.loc[df['Barra'].str.contains(barra)]
+    fin = pd.concat([fin, df])
+
+#%%
+fin.to_excel(folder / f'CMg_23_{barra}.xlsx', index=False)
+
+

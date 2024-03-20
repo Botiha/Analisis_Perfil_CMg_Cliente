@@ -7,7 +7,7 @@ path = Path(r'C:\_BD_Clientes\IVT')
 meses = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 
 #%%   ***** BUSCA CLIENTE ****
-cliente = 'beluxa'.upper()
+cliente = 'molino'.upper()
 agno, mes = '23', '12'
 cl_ivt = ClientesIVT(path, agno, mes)
 df2 = cl_ivt.busca_cliente(cliente)
@@ -16,7 +16,7 @@ print(df2.columns)
 #%%
 df2['CABRERO_______013;ENEL_GENERACION;L_D;ECOMASCABRE1;ECOMAS S.A.']
 #%%
-cliente = 'ors'
+cliente = 'MOLINO LA ESTAMPA SA'
 agno = '23'
 df_fin = pd.DataFrame()
 for mes in meses:
@@ -29,7 +29,7 @@ print(f'{"-"*5}\tProceso Terminado\t{"-"*5}')
 #%%
 df_fin
 #%%
-df_fin.to_excel(path / f'{cliente}_Olmue_{agno}.xlsx')
+df_fin.to_excel(path / f'{cliente}_{agno}.xlsx')
 #%%   ***** COSTO MARGINAL ****
 barra = ['MAULE']
 agno, mes = '23', '01'
@@ -44,7 +44,9 @@ barras = [
     'S.JOAQUIN_____015', 'S.PEDRO_______013',
     'STA.ELVIRA____013', 'CABRERO_______013'
 ]
-
+barras = [
+    'ALTAMIRANO____013'
+]
 
 agno = '23'
 df_fin = pd.DataFrame()
@@ -57,7 +59,7 @@ print(f'{"-"*5}\tProceso Terminado\t{"-"*5}')
 #%%
 df_fin
 #%%
-df_fin.to_excel(path / f'CMg_ClientesSur_{agno}.xlsx')
+df_fin.to_excel(path / f'CMg_ALTAMIRANO____013_{agno}.xlsx')
 #%%  BUSCA CLIENTES CGEC
 
 clientes = [

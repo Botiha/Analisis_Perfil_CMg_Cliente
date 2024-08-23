@@ -7,8 +7,8 @@ path = Path(r"C:\_BD_Clientes\IVT")
 meses = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 
 # %%   ***** BUSCA CLIENTE ****
-cliente = "ABASOLO".upper()
-agno, mes = "23", "12"
+cliente = "conal".upper()
+agno, mes = "24", "01"
 cl_ivt = ClientesIVT(path, agno, mes)
 df2 = cl_ivt.busca_cliente(cliente)
 print(df2.columns)
@@ -16,8 +16,9 @@ print(df2.columns)
 # %%
 df2["CABRERO_______013;ENEL_GENERACION;L_D;ECOMASCABRE1;ECOMAS S.A."]
 # %% Busqueda de cliente por 12 merses completo
-cliente = "OVALLE _CASINO_RESORT_S".upper()
-agno = "23"  # sólo 2 números, año 24, o año 23
+cliente = "CONALUM".upper()
+agno = "24"  # sólo 2 números, año 24, o año 23
+meses = ["01", "02", "03"]
 df_fin = pd.DataFrame()
 for mes in meses:
     print(f"procesando {mes}")
@@ -52,7 +53,7 @@ barras = [
     "STA.ELVIRA____013",
     "CABRERO_______013",
 ]
-barras = ["OVALLE________023"]
+barras = ["CHILLAN_______013"]
 
 agno = "23"
 # meses = ['01', '02']
@@ -67,7 +68,7 @@ print(f'{"-"*5}\tProceso Terminado\t{"-"*5}')
 # %%
 df_fin
 # %%
-df_fin.to_excel(path / f"CMg_Ovalle23_{agno}.xlsx")
+df_fin.to_excel(path / f"CMg_CHILLAN13_{agno}.xlsx")
 # %%  BUSCA CLIENTES CGEC
 
 clientes = [
@@ -127,7 +128,8 @@ for mes in meses:
 print(f'{"-"*5}\tProceso Terminado\t{"-"*5}')
 # %%
 df_fin.to_excel(path / f"CONSUMO_Clientes_VISITA_SUR_{agno}.xlsx")
-
-
-
-
+# %%
+path = Path(r"C:\_BD_Clientes\2024\01_Chequeo_Medidas\CMg")
+df = pd.read_parquet(path / "cmg2402_def.parquet")
+# %%
+df

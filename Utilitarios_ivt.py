@@ -48,7 +48,6 @@ print("Archivo xlsb procesado")
 
 
 # % Crea Perfiles IVT_año y CMg_año por clientes
-
 ar_csvs = glob.glob(str(path_ivt) + "\*.csv")
 print(f"archivos csv a procesar: {[x for x in ar_csvs]}")
 

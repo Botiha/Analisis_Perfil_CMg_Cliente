@@ -50,9 +50,9 @@ def perfil():
 
     df_fin = pd.DataFrame()
     for mes in meses:
-        print(f"procesando {mes}")
+        print(f"procesando {mes}: {cliente}")
         cl_ivt = ClientesIVT(path, agno, mes)
-        df2 = cl_ivt.busca_cliente(cliente[0])
+        df2 = cl_ivt.busca_cliente(cliente)
         df_fin = pd.concat([df_fin, df2])
     df_fin.to_excel(path / cfg["Clientes"]["archivo_salida"])
     return
@@ -117,7 +117,6 @@ def procesa_medidas():
         procesa_medidas_15min(path_ivt, ar_zip)
 
     print(f"\nTiempo tomado en proceso: {round(time.time() - ti)} seg")
-    pass
 
 
 def procesa_medidas_horarias(path_ivt, ar_xlsb):
@@ -147,20 +146,34 @@ def procesa_medidas_15min(path_ivt, ar_zip):
 
 # %%
 if __name__ == "__main__":
-    # %%
-    # cmg = pd.read_parquet(path_ivt / "CMg_24_06.parquet")
-    # ivt = pd.read_parquet(path_ivt / "IVT_24_06.parquet")
-    import time
-    import pandas as pd
-    import polars as pl
+    #%%
+    cfg = configparser.ConfigParser(inline_comment_prefixes="#",
+        converters={"list": lambda x: [i.strip() for i in x.split("," "")]}, )
+    cfg.read("conf.ini")
+    path = Path(cfg["Direcciones"]["data"])
 
-    ti = time.time()
-    m15 = pd.read_parquet(path_ivt / "Medidas_15min_2407.parquet")
-    print(time.time() - ti)
+    #perfil()
+    CalculaCMg()
+    #%%
+    path = Path(cfg["Direcciones"]["data"])
+    agno = cfg["CostoMarginal"]["agno"]
+    meses = cfg.getlist("CostoMarginal", "meses")
+    barra = [x.upper() for x in cfg.getlist("CostoMarginal", "barra")]
+    cliente = [x.upper() for x in cfg.getlist("Clientes", "cliente")]
 
-    # %%
-    ti = time.time()
-    m16 = pl.read_parquet(path_ivt / "Medidas_15min_2407.parquet")
-    m16 = m16.to_pandas()
-    print(time.time() - ti)
-    # %%
+    #cmg = CMgIVT(path, agno, meses[0])
+    ivt = ClientesIVT(path, agno, meses[0])
+    #%%
+    df_fin = ivt.df_data
+    fecha = [int(x) for x in df_fin.columns[6:]]
+    print(['paf'] + fecha)
+    #%%
+    cmg.df_data
+    #%%
+    df = cmg.busca_barra(barra)
+    #%%
+    dfh = cmg.hour_col_to_date_col_new(False)
+    #%%
+    lst = [cmg.cols_data_IVT[0]]
+    #%%
+    lst

@@ -113,7 +113,7 @@ class LeeMedidas:
         return df
 
     def lee_medidas_qmin(self):
-        med = f"Medidas_15min_{self.anio}-{self.mes}.parquet"
+        med = self.carpeta / f"Medidas_15min_{self.anio}-{self.mes}.parquet"
 
         if not (med).exists():
             # con polars es 3 a 4 veces más rápido
@@ -229,18 +229,28 @@ class DataIVT:
         "descripcion",
     ]
 
+
     def __init__(self, path, año, mes):
         self.path = path
         self.año = año
         self.mes = str(mes).zfill(2)
 
-    def hour_col_to_date_col_new(self):
+    def hour_col_to_date_col_new(self, cols_ivt=True):
         df_fin = self.df_data.copy()
-        fecha = [int(x) for x in df_fin.columns[6:]]
+
+        if cols_ivt:
+            cols_ivt = self.cols_data_IVT + ['Valores']
+            inicio_int = 6
+        else:
+            cols_ivt = [self.cols_data_IVT[0]]
+            inicio_int = 1
+
+        fecha = [int(x) for x in df_fin.columns[inicio_int:]]
         start_date = pd.to_datetime(f"20{self.año}-{int(self.mes)}-01")
         horas = pd.to_timedelta([x - 1 for x in fecha], unit="h")
         horas += start_date
-        df_fin.columns = self.cols_data_IVT + ["Valores"] + horas.to_list()
+
+        df_fin.columns = cols_ivt + horas.to_list()
         return df_fin
 
 
@@ -283,7 +293,7 @@ class CMgIVT(DataIVT):
         self.df_data = pd.read_parquet(self.path_cmg)
 
     def busca_barra(self, barra):
-        df = self.hour_col_to_date_col_new()
+        df = self.hour_col_to_date_col_new(cols_ivt=False)
         cols = self.cols_data_IVT.copy()
 
         if isinstance(barra, str):
@@ -295,8 +305,8 @@ class CMgIVT(DataIVT):
 
         # df['Barra'] = df['nombre_barra']
         cols.remove("nombre_barra")
-        df.drop(columns=cols, inplace=True)
-        df.drop(columns="Valores", inplace=True)
+        #df.drop(columns=cols, inplace=True)
+        #df.drop(columns="Valores", inplace=True)
         df = df.drop_duplicates()
         df = pd.DataFrame(
             columns=df.nombre_barra,

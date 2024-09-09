@@ -38,7 +38,7 @@ class RevisaPagCMg:
                         pass
 
             else:
-                return f"Failed to retrieve data: {response.status_code}"
+                return f"Failed to retrieve data: {pag.status_code}"
 
         for t in link:
             try:
@@ -164,9 +164,9 @@ class DescargaCMg(DescargaLink):
 
         #df_fin['Fecha'] = pd.to_datetime(
         #    df_fin[['Year', 'Month', 'Day', 'Hour']], format='%Y%m%d%H')
-        df['Fecha'] = pd.to_datetime(df[['Year', 'Month', 'Day', 'Hour']],
+        df_fin['Fecha'] = pd.to_datetime(df_fin[['Year', 'Month', 'Day', 'Hour']],
                                      format='%Y%m%d%H')
-        df = df[['Fecha', 'Barra', 'CMg [mills/kWh]', 'USD', 'CMg[$/KWh]']]
+        df_fin = df_fin[['Fecha', 'Barra', 'CMg [mills/kWh]', 'USD', 'CMg[$/KWh]']]
 
         #df_fin = df_fin[['Year', 'Month', 'Day', 'Hour', 'Barra',
         #                 'CMg [mills/kWh]', 'USD', 'CMg[$/KWh]']]
@@ -182,6 +182,58 @@ class DescargaCMg(DescargaLink):
         df_to_fix.columns = cols
         return pd.concat([df1, df_to_fix])
 
+
+def get_mes(mes):
+    dict_mes = {
+        '1': 'Enero',
+        '2': 'Febrero',
+        '3': 'Marzo',
+        '4': 'Abril',
+        '5': 'Mayo',
+        '6': 'Junio',
+        '7': 'Julio',
+        '8': 'Agosto',
+        '9': 'Septiembre',
+        '10': 'Octubre',
+    }
+    return dict_mes[mes]
+
+def descarga_cmg_15(year, month, proceso):
+    sub_cmg = "costo-marginal-real-transferencias-economicas"
+    mes_str = get_mes(month).lower()
+    cen = "https://www.coordinador.cl/mercados/documentos/costo-marginal-real/"
+    cmg = f"{year}-{sub_cmg}/{mes_str}-{year}-{sub_cmg}"
+    cmg = cen + cmg
+
+    for dia in range(1, 8):
+        dia = str(dia).zfill(2)
+        link = f"/{dia}-{mes_str}-{year}-{sub_cmg}/"
+        link = cmg + link
+        #link2 = requests.get(link)
+        #soup = BeautifulSoup(link2, 'html.parser')
+    return link
+
+
+#%%
+ur = descarga_cmg_15("2024", "8", "paf")
+#%%
+url = requests.get(ur)
+soup = BeautifulSoup(url.content)
+link = soup.find('a', class_='cen_btn cen_btn-primary')['href']
+print("Link:", link)
+
+fecha_publicacion = soup.find('span', class_='documentos-Publicar-Fecha').text
+print("Fecha de publicación:", fecha_publicacion)
+
+titulo = soup.find('span', class_='informes-estudio-Titulo').text
+print("Título:", titulo)
+
+#%%
+
+#%%
+data2[0]['href']
+
+
 #%%
 pag = RevisaPagCMg(2023)
 data = pag.get_html()
@@ -189,12 +241,15 @@ print('Extrayendo info desde el Coordinador...')
 df = pd.DataFrame(columns=['texto', 'fecha', 'link', 'size'],
                   data=zip(data[0], data[1], data[2], data[3]))
 
-folder = Path(r'C:\_Costos_Marginales')
+folder = Path(r'D:\CGE\CMg')
+#%%
+data
 
 #%%
-for i in [11]:
-    desc =  DescargaCMg(df, i, folder)
+for i in [1,2,3,4,5,6,7,8,9,10,11,12]:
+    desc = DescargaCMg(df, i, folder)
     desc.download_with_progress()
+
     print(f'{desc.mes}...descargado')
     df2 = desc.arregla_cmg()
     print(f'{desc.file}...transformado y grabado como parquet')

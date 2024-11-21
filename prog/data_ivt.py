@@ -1,3 +1,4 @@
+# %%
 import pandas as pd
 import polars as pl
 from subprocess import call
@@ -229,7 +230,6 @@ class DataIVT:
         "descripcion",
     ]
 
-
     def __init__(self, path, año, mes):
         self.path = path
         self.año = año
@@ -239,7 +239,7 @@ class DataIVT:
         df_fin = self.df_data.copy()
 
         if cols_ivt:
-            cols_ivt = self.cols_data_IVT + ['Valores']
+            cols_ivt = self.cols_data_IVT + ["Valores"]
             inicio_int = 6
         else:
             cols_ivt = [self.cols_data_IVT[0]]
@@ -293,7 +293,8 @@ class CMgIVT(DataIVT):
         self.df_data = pd.read_parquet(self.path_cmg)
 
     def busca_barra(self, barra):
-        df = self.hour_col_to_date_col_new(cols_ivt=False)
+        cols_ivt = False  # False para 15min
+        df = self.hour_col_to_date_col_new(True)
         cols = self.cols_data_IVT.copy()
 
         if isinstance(barra, str):
@@ -303,18 +304,65 @@ class CMgIVT(DataIVT):
                 df["nombre_barra"].str.contains("|".join([x.upper() for x in barra]))
             ]
 
-        # df['Barra'] = df['nombre_barra']
+        # df["Barra"] = df["nombre_barra"]
         cols.remove("nombre_barra")
-        #df.drop(columns=cols, inplace=True)
-        #df.drop(columns="Valores", inplace=True)
+        df.drop(columns=cols, inplace=True)
+        df.drop(columns="Valores", inplace=True)
         df = df.drop_duplicates()
-        df = pd.DataFrame(
-            columns=df.nombre_barra,
-            index=df.iloc[:, 1:].T.index,
-            data=df.iloc[:, 1:].T.values,
-        )
+        if cols_ivt:
+            df["Barra"] = df["nombre_barra"]
+            df.drop(columns=cols, inplace=True)
+            df.drop(columns="Valores", inplace=True)
+            df = df.drop_duplicates()
+            df = pd.DataFrame(
+                columns=df.nombre_barra,
+                index=df.iloc[:, 1:].T.index,
+                data=df.iloc[:, 1:].T.values,
+            )
+        else:
+            df = df.drop_duplicates()
+            df = pd.DataFrame(
+                columns=df.nombre_barra,
+                index=df.iloc[:, 1:].T.index,
+                data=df.iloc[:, 1:].T.values,
+            )
+
         return df
 
 
+# %%
 if __name__ == "__main__":
-    print("paf")
+    # %%
+    ar = Path(r"C:\_BD_Clientes\IVT\CMg_24_01.parquet")
+    df = pd.read_parquet(ar)
+
+    # %%
+    barras = [""]
+
+    agno = "23"
+    meses = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+
+    df_fin = pd.DataFrame()
+    for mes in meses:
+        print(f"procesando {mes}")
+        cl_cmg = CMgIVT(path, agno, mes)
+        df2 = cl_cmg.busca_barra(barras)
+        df_fin = pd.concat([df_fin, df2])
+    print(f'{"-" * 5}\tProceso Terminado\t{"-" * 5}')
+    # %%
+    df = pd.melt(df_fin, ignore_index=False)
+    # %%
+    df = df.reset_index()
+    df["Fecha"] = df["index"].dt.date
+    df["Hora"] = df["index"].dt.time
+    df = df.drop("index", axis=1)
+    # %%
+    df.rename(
+        columns={
+            "nombre_barra": "Barra",
+            "value": "CMg [CLP/kWh]",
+        },
+        inplace=True,
+    )
+    # %%
+    df.to_parquet(path / "CMg_2023.parquet")

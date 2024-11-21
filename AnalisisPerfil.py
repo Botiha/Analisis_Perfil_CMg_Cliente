@@ -146,34 +146,36 @@ def procesa_medidas_15min(path_ivt, ar_zip):
 
 # %%
 if __name__ == "__main__":
-    #%%
-    cfg = configparser.ConfigParser(inline_comment_prefixes="#",
-        converters={"list": lambda x: [i.strip() for i in x.split("," "")]}, )
+    # %%
+    cfg = configparser.ConfigParser(
+        inline_comment_prefixes="#",
+        converters={"list": lambda x: [i.strip() for i in x.split("," "")]},
+    )
     cfg.read("conf.ini")
     path = Path(cfg["Direcciones"]["data"])
 
-    #perfil()
+    # perfil()
     CalculaCMg()
-    #%%
+    # %%
     path = Path(cfg["Direcciones"]["data"])
     agno = cfg["CostoMarginal"]["agno"]
     meses = cfg.getlist("CostoMarginal", "meses")
     barra = [x.upper() for x in cfg.getlist("CostoMarginal", "barra")]
     cliente = [x.upper() for x in cfg.getlist("Clientes", "cliente")]
 
-    #cmg = CMgIVT(path, agno, meses[0])
+    # cmg = CMgIVT(path, agno, meses[0])
     ivt = ClientesIVT(path, agno, meses[0])
-    #%%
+    # %%
     df_fin = ivt.df_data
     fecha = [int(x) for x in df_fin.columns[6:]]
-    print(['paf'] + fecha)
-    #%%
+    print(["paf"] + fecha)
+    # %%
     cmg.df_data
-    #%%
+    # %%
     df = cmg.busca_barra(barra)
-    #%%
+    # %%
     dfh = cmg.hour_col_to_date_col_new(False)
-    #%%
+    # %%
     lst = [cmg.cols_data_IVT[0]]
-    #%%
+    # %%
     lst

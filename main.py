@@ -14,11 +14,14 @@ df2 = cl_ivt.busca_cliente(cliente)
 print(df2.columns)
 
 # %%
+df2
+# %%
 df2["CABRERO_______013;ENEL_GENERACION;L_D;ECOMASCABRE1;ECOMAS S.A."]
 # %% Busqueda de cliente por 12 merses completo
-cliente = "CONALUM".upper()
-agno = "24"  # sólo 2 números, año 24, o año 23
+cliente = "".upper()
+agno = "23"  # sólo 2 números, año 24, o año 23
 meses = ["01", "02", "03"]
+meses = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 df_fin = pd.DataFrame()
 for mes in meses:
     print(f"procesando {mes}")
@@ -27,14 +30,51 @@ for mes in meses:
     df_fin = pd.concat([df_fin, df2])
 print(f'{"-"*5}\tProceso Terminado\t{"-"*5}')
 
-# %% visualizar resultado
-df_fin
 # %% Grabar resultado
 df_fin.to_excel(path / f"{cliente}_{agno}.xlsx")
 
+# %% Deja sólo clientes con L, L_D, y L_S
+df_fin = df_fin.drop(df_fin.filter(like=";T;").columns, axis=1)
+df_fin = df_fin.drop(df_fin.filter(like=";G;").columns, axis=1)
+df_fin = df_fin.drop(df_fin.filter(like=";R;").columns, axis=1)
+df_fin = df_fin.drop(df_fin.filter(like=";N;").columns, axis=1)
 
+df_fin.columns = [";".join(col.split(";")[-3:]) for col in df_fin.columns]
+df_fin.columns = [";".join(reversed(col.split(";"))) for col in df_fin.columns]
+df_fin.columns = [";".join(col.split(";")[-3:]) for col in df_fin.columns]
+df_fin.columns = [";".join(reversed(col.split(";"))) for col in df_fin.columns]
+df_fin = df_fin * -1
+
+# %% visualizar resultado
+df_fin.to_excel(path / f"2023_Clientes.xlsx")
+# %%
+df_fin
+# %%
+df = pd.melt(df_fin, ignore_index=False)
+# %%
+df = df.assign(**df["variable"].str.split(";", expand=True).add_prefix("n_"))
+df.rename(
+    columns={
+        "value": "Consumo [kWh]",
+        "n_0": "Tipo",
+        "n_1": "PuntoMedida",
+        "n_2": "Cliente",
+    },
+    inplace=True,
+)
+df.drop(columns="variable", inplace=True)
+df = df.reset_index()
+df["Fecha"] = df["index"].dt.date
+df["Hora"] = df["index"].dt.time
+df = df.drop("index", axis=1)
+# %%
+df
+
+# %%
+df.to_parquet(path / f"2023_Clientes.parquet")
+print("paf")
 # %%   ***** COSTO MARGINAL ****
-barra = ["pintana"]
+barra = [""]
 agno, mes = "23", "02"
 cl_cmg = CMgIVT(path, agno, mes)
 df = cl_cmg.busca_barra(barra)
@@ -56,7 +96,7 @@ barras = [
 barras = ["CHILLAN_______013"]
 
 agno = "23"
-# meses = ['01', '02']
+meses = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 
 df_fin = pd.DataFrame()
 for mes in meses:

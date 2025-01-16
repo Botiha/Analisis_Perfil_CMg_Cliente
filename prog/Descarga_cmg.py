@@ -238,7 +238,10 @@ def descarga_cmg_15(year, month, proceso):
 
 
 # %%
-ur = descarga_cmg_15("2024", "8", "paf")
+ur = descarga_cmg_15("2024", "10", "def")
+# %%
+
+link
 # %%
 url = requests.get(ur)
 soup = BeautifulSoup(url.content)
@@ -269,7 +272,7 @@ df = pd.DataFrame(
 
 folder = Path(r"C:\_Costos_Marginales")
 # %%
-
+data
 # %%
 for i in meses:
     mes = f"{str(i).zfill(2)}_"
